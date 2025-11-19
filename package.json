@@ -1,0 +1,30 @@
+{
+  "name": "certguardian-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A dashboard for monitoring server and client TLS certificates across various applications and infrastructure components. It provides advanced querying, filtering, sorting, and charting of certificate data with high performance and responsiveness.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-window": "^1.8.10",
+    "recharts": "^3.3.0",
+    "@google/genai": "^0.1.1",
+    "react-markdown": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/react-window": "^1.8.8",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.13"
+  }
+}

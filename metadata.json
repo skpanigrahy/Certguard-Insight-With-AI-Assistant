@@ -1,0 +1,5 @@
+{
+  "name": "CertGuardian Dashboard",
+  "description": "A dashboard for monitoring server and client TLS certificates across various applications and infrastructure components. It provides advanced querying, filtering, sorting, and charting of certificate data with high performance and responsiveness.",
+  "requestFramePermissions": []
+}
