@@ -27,6 +27,10 @@ const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({ onClose }) => {
   const [content, setContent] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Upload Feedback State
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
   useEffect(() => {
     const saved = localStorage.getItem('certguardian_kb_items');
     if (saved) {
@@ -121,17 +125,35 @@ const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({ onClose }) => {
       const file = event.target.files?.[0];
       if (!file) return;
 
+      setIsUploading(true);
+      setUploadStatus('idle');
+
       const reader = new FileReader();
       reader.onload = (e) => {
-          const text = e.target?.result;
-          if (typeof text === 'string') {
-              setContent(prev => prev ? prev + '\n\n' + text : text);
-              if (!title) {
-                  const fileName = file.name.split('.').slice(0, -1).join('.');
-                  setTitle(fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[-_]/g, ' '));
-              }
-          }
+          // Simulate network/processing delay for better UX
+          setTimeout(() => {
+            const text = e.target?.result;
+            if (typeof text === 'string') {
+                setContent(prev => prev ? prev + '\n\n' + text : text);
+                if (!title) {
+                    const fileName = file.name.split('.').slice(0, -1).join('.');
+                    setTitle(fileName.charAt(0).toUpperCase() + fileName.slice(1).replace(/[-_]/g, ' '));
+                }
+                setUploadStatus('success');
+                // Clear success message after 3 seconds
+                setTimeout(() => setUploadStatus('idle'), 3000);
+            } else {
+                setUploadStatus('error');
+            }
+            setIsUploading(false);
+          }, 1200);
       };
+      
+      reader.onerror = () => {
+          setIsUploading(false);
+          setUploadStatus('error');
+      };
+
       reader.readAsText(file);
       if (fileInputRef.current) fileInputRef.current.value = '';
   };
@@ -277,20 +299,39 @@ const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({ onClose }) => {
                 <div className="max-w-3xl mx-auto card space-y-6">
                     <div className="flex justify-between items-center">
                          <h4 className="text-lg font-bold">{currentUserRole === 'Admin' ? 'Add New Article' : 'Submit Draft for Review'}</h4>
-                         <button onClick={triggerFileUpload} className="btn btn-outline text-xs">
-                            <UploadIcon className="w-4 h-4 mr-2" /> Upload Document
-                         </button>
+                         <div className="flex items-center gap-3">
+                            {isUploading && (
+                                <div className="flex items-center text-xs text-accent">
+                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Processing...
+                                </div>
+                            )}
+                            {uploadStatus === 'success' && (
+                                <div className="flex items-center text-xs text-success font-bold animate-pulse">
+                                    <CheckIcon className="w-4 h-4 mr-1" /> Imported
+                                </div>
+                            )}
+                            {uploadStatus === 'error' && (
+                                <div className="text-xs text-danger font-bold">Error reading file</div>
+                            )}
+                             <button onClick={triggerFileUpload} className="btn btn-outline text-xs" disabled={isUploading}>
+                                <UploadIcon className="w-4 h-4 mr-2" /> Upload Document
+                             </button>
+                         </div>
                          <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept=".txt,.md,.json,.csv" className="hidden" />
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium mb-1">Title <span className="text-danger">*</span></label>
-                        <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., How to renew SSL certs" />
+                        <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g., How to renew SSL certs" disabled={isUploading} />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-sm font-medium mb-1">Category</label>
-                            <select className="input" value={category} onChange={(e) => setCategory(e.target.value as any)}>
+                            <select className="input" value={category} onChange={(e) => setCategory(e.target.value as any)} disabled={isUploading}>
                                 <option>General</option>
                                 <option>Troubleshooting</option>
                                 <option>Policy</option>
@@ -299,7 +340,7 @@ const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({ onClose }) => {
                         </div>
                         <div>
                             <label className="block text-sm font-medium mb-1">Source</label>
-                            <select className="input" value={source} onChange={(e) => setSource(e.target.value as any)}>
+                            <select className="input" value={source} onChange={(e) => setSource(e.target.value as any)} disabled={isUploading}>
                                 <option>Manual</option>
                                 <option>Confluence</option>
                                 <option>Teams</option>
@@ -310,12 +351,12 @@ const KnowledgeBaseModal: React.FC<KnowledgeBaseModalProps> = ({ onClose }) => {
                     <div>
                         <label className="block text-sm font-medium mb-1">Content <span className="text-danger">*</span></label>
                         <div className="relative">
-                            <textarea className="input min-h-[250px] font-mono text-sm" value={content} onChange={e => setContent(e.target.value)} placeholder="Content..." />
+                            <textarea className="input min-h-[250px] font-mono text-sm" value={content} onChange={e => setContent(e.target.value)} placeholder="Content..." disabled={isUploading} />
                         </div>
                     </div>
                     <div className="flex justify-end gap-3 pt-4 border-t border-border">
-                        <button onClick={() => setActiveTab('list')} className="btn btn-outline">Cancel</button>
-                        <button onClick={handleSave} className="btn btn-primary" disabled={!title.trim() || !content.trim()}>
+                        <button onClick={() => setActiveTab('list')} className="btn btn-outline" disabled={isUploading}>Cancel</button>
+                        <button onClick={handleSave} className="btn btn-primary" disabled={!title.trim() || !content.trim() || isUploading}>
                             {currentUserRole === 'Admin' ? 'Publish Immediately' : 'Submit for Approval'}
                         </button>
                     </div>
