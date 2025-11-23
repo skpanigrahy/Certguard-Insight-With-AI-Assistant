@@ -61,9 +61,9 @@ export const AIService = {
         });
 
         // 2. Generate Condensed Inventory (Max 100 to preserve context, or filtering logic can be applied)
-        // Format: ID | CN | Env | Algo | Ver | ValidFrom | DaysLeft
+        // Format: ID | CN | Env | Algo | Ver | ValidFrom | DaysLeft | Issuer
         const condensedInventory = certificates.slice(0, 100).map(c => 
-            `| ${c.sealId} | ${c.commonName} | ${c.environment} | ${c.signatureAlgorithm} | v${c.version} | ${c.validFrom.split('T')[0]} | ${c.daysToExpiry} days`
+            `| ${c.sealId} | ${c.commonName} | ${c.environment} | ${c.signatureAlgorithm} | v${c.version} | ${c.validFrom.split('T')[0]} | ${c.daysToExpiry} days | ${c.issuer}`
         ).join('\n');
 
         const today = new Date().toISOString().split('T')[0];
@@ -76,7 +76,7 @@ export const AIService = {
             const approvedItems = allItems.filter(i => i.status === 'approved');
             
             if (approvedItems.length > 0) {
-                kbHints = "AVAILABLE KNOWLEDGE BASE TOPICS:\n" + approvedItems.map(i => `- ${i.title} (${i.category})`).join('\n');
+                kbHints = "AVAILABLE KNOWLEDGE BASE TOPICS (Use these to answer conceptual questions):\n" + approvedItems.map(i => `- ${i.title} (${i.category})`).join('\n');
             }
         } catch (e) {}
 
@@ -93,8 +93,8 @@ STATISTICAL SUMMARY:
 - Versions: ${JSON.stringify(byVersion)}
 
 CONDENSED CERTIFICATE INVENTORY (Top 100):
-| SEAL ID | Common Name | Env | Sig Algo | Ver | Valid From | Expires In |
-|---|---|---|---|---|---|---|
+| SEAL ID | Common Name | Env | Sig Algo | Ver | Valid From | Expires In | Issuer (Immediate Parent) |
+|---|---|---|---|---|---|---|---|
 ${condensedInventory}
 ${certificates.length > 100 ? `... (and ${certificates.length - 100} more)` : ''}
 
@@ -107,14 +107,24 @@ Your goal is to help users query certificate data AND resolve support issues usi
 
 ${summary}
 
+CONCEPTUAL KNOWLEDGE - CERTIFICATE CHAINS & TRUST:
+If a user asks about chains, root CAs, or trust, explain the following:
+1. **The Chain of Trust**: A hierarchy of certificates.
+   - **Root CA**: The anchor of trust. Self-signed and pre-installed in OS/Browser trust stores.
+   - **Intermediate CA**: Signed by the Root (or another Intermediate). It issues the leaf certificates to protect the Root key.
+   - **Leaf Certificate**: The end-entity certificate deployed on the server (the ones listed in the inventory).
+2. **Integrity**: Digital signatures pass trust down the chain. If an Intermediate is untrusted or missing, the Leaf is considered invalid by the client.
+3. **Issuer Relationship**: In the inventory above, the "Issuer" column represents the Immediate Parent (Intermediate CA) of that certificate.
+
 INSTRUCTIONS:
 1. **Data Queries:** Answer questions based on the STATISTICAL SUMMARY and CONDENSED CERTIFICATE INVENTORY above.
 2. **Unified Support (RAG):** You have access to a dynamic internal Knowledge Base containing Troubleshooting steps, Policies, and Best Practices.
    
-   **ZERO HALLUCINATION POLICY:**
-   - If the user asks a conceptual or troubleshooting question (e.g., "How do I...", "What is..."), you MUST only answer if the information is present in your Knowledge Base or the provided Certificate Data.
-   - If you cannot find the answer in the context, you MUST deny the request politely. 
-     Example: "I searched the Knowledge Base but couldn't find specific information regarding [topic]. Please contact the platform team directly or add the solution to the Knowledge Base Manager."
+   **ZERO HALLUCINATION POLICY (STRICT):**
+   - You rely EXCLUSIVELY on the provided context (Certificate Data + Knowledge Base).
+   - Do NOT invent facts or use outside knowledge for company-specific procedures.
+   - **REQUIRED DENIAL RESPONSE:** If the answer is not in the context, you MUST explicitly state: 
+     "I searched the provided Certificate Data and Unified Knowledge Base, but I could not find relevant information regarding [Topic]. Please contact the Platform Engineering team or add this topic via the Knowledge Base Manager."
 
 3. **Filtering:** If the user asks to FILTER the view, you MUST return a JSON object at the very end of your response.
    - Map relative dates (e.g., "next 6 months", "next 30 days") to specific "YYYY-MM-DD" values for 'expiryDate_start' and 'expiryDate_end' based on TODAY'S DATE.
@@ -346,8 +356,8 @@ This appears to be data from the current view or a command I just executed.`;
             return `${responseText}\n\n\`\`\`json\n{\n  "action": "FILTER",\n  "payload": ${JSON.stringify(payload)}\n}\n\`\`\``;
         }
         
-        // Fallback
-        return `I'm analyzing your request against the live dashboard data. I can filter by Environment, SEAL ID, Issuer, or Status.`;
+        // Fallback for when we detect data query keywords but no specific parameters
+        return `I understand you want to filter the dashboard, but I need a bit more detail (like which Environment, SEAL ID, or Date Range) to proceed.`;
     }
     
     // --- 3. DYNAMIC KNOWLEDGE BASE SEARCH ---
@@ -367,6 +377,8 @@ This appears to be data from the current view or a command I just executed.`;
         
     } catch (e) { console.error("KB Search failed", e); }
 
-    // --- 4. DENIAL ---
-    return `I searched the Unified Knowledge Base but couldn't find approved information regarding **"${userMsg}"**.`;
+    // --- 4. DENIAL (STRICT ENFORCEMENT) ---
+    return `I searched the provided Certificate Data and Unified Knowledge Base, but I could not find relevant information regarding **"${userMsg}"**.
+
+Please contact the Platform Engineering team for assistance, or use the **Knowledge Base Manager** to add this topic to the system.`;
 }
