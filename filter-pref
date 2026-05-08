@@ -1,0 +1,134 @@
+We need to enhance the Advanced Filter behavior in the Photon UI application.
+
+Current behavior:
+
+- User preferences are stored in local storage.
+- Focus mode loads only preferred/saved field IDs.
+- This improves performance because we avoid loading all data from DB every time.
+- Advanced Filter currently works only as a temporary filter layer.
+- Advanced Filter state is NOT automatically persisted.
+
+New requirement:
+We want Advanced Filter to automatically persist the latest searched field IDs and restore them when the user revisits the page.
+
+Goal:
+A new user should not need to manually configure Preferences to continue where they left off.
+
+Expected behavior:
+
+1. First visit
+
+- If no saved state exists:
+  - Load default/full view.
+
+2. When user applies Advanced Filter
+   Example:
+
+- User searches field IDs:
+  - 1055714
+  - 85103
+
+System should:
+
+- Apply filter immediately.
+- Persist advanced filter state in local storage automatically.
+- Do NOT require user to manually save into Preferences.
+
+3. On next visit/page reload
+   System should:
+
+- Check if advanced filter state exists.
+- Restore latest advanced filter automatically.
+- Load filtered data directly instead of full dataset.
+
+4. If user changes advanced filter
+   Example:
+
+- Previous filter = 1055714
+- New filter = 85103
+
+Then:
+
+- Replace old advanced filter state with latest state.
+- Restore latest state on future visits.
+
+5. Existing Preferences behavior must remain unchanged.
+   Do NOT break:
+
+- Focus mode
+- View all mode
+- Existing preference storage
+- Existing clear/remove functionality
+
+6. Introduce separate local storage keys
+
+Example:
+
+- photon_preferences
+- photon_advanced_filters
+
+Reason:
+
+- Preferences are stable/persistent user configuration.
+- Advanced filters are dynamic/recent-session state.
+
+7. Priority during page load
+   Apply in this order:
+
+A.
+If advanced filter exists:
+
+- Restore advanced filter.
+- Fetch filtered dataset directly.
+
+B.
+Else if focus mode/preferences exist:
+
+- Load preference-based dataset.
+
+C.
+Else:
+
+- Load default/full dataset.
+
+8. Performance considerations
+
+- Avoid unnecessary full data load before applying filter.
+- Apply advanced filter before rendering/fetch completion if possible.
+- Reuse existing API/filter logic where possible.
+- Keep DB load optimized.
+
+9. Additional requirements
+
+- Existing “remove field” and “clear all” functionality should also clear persisted advanced filter state when applicable.
+- Handle browser refresh and tab close/reopen.
+- Ensure no duplicate field IDs are stored.
+- Add defensive checks for malformed local storage values.
+
+10. Suggested implementation structure
+
+Create helper utilities:
+
+- saveAdvancedFilterState()
+- loadAdvancedFilterState()
+- clearAdvancedFilterState()
+
+Update:
+
+- Advanced Filter Apply handler
+- Page initialization logic
+- Existing clear/reset handlers
+
+11. Add inline comments explaining:
+
+- why advanced filters are separated from preferences
+- why restore priority matters
+- performance implications
+
+12. Add console logging temporarily for testing:
+
+- restoring advanced filters
+- saving advanced filters
+- clearing advanced filters
+
+Please implement this cleanly with minimal impact to existing functionality and maintain backward compatibility with current preference storage behavior.
