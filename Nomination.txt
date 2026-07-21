@@ -11,3 +11,20 @@ Reason 2 — Innovation
 Reimagined a legacy monitoring solution into a scalable enterprise platform with intelligent analytics, enhanced user experience, enterprise framework integration, and readiness for emerging post-quantum cryptography standards.
 Reason 3 — Execution & Collaboration
 Successfully delivered a complex platform transformation through close collaboration across engineering, infrastructure, cybersecurity, and application teams while independently implementing enterprise framework integration to accelerate adoption.
+
+
+Hi Hubert,
+
+Thank you for your thoughtful feedback and for taking the time to review our proposal. We also appreciate your kind words regarding the work.
+
+We fully understand and support the firm's strategy of standardizing on CryptoLite as the official PQC solution across the organization. Our intention was never to build an alternative PQC implementation or compete with CryptoLite.
+
+The motivation behind CertGuardian is different. It focuses on operational visibility, governance, and compliance around TLS and certificate usage. During our research, we reviewed CryptoLite's capabilities and identified opportunities around enterprise observability, such as providing runtime visibility into negotiated TLS connections, connection context, compliance evidence, and centralized reporting. Our goal is to complement CryptoLite by building on top of the telemetry it provides, rather than replacing or duplicating its cryptographic capabilities.
+
+If there are areas where these observability capabilities would also benefit CryptoLite, we would be happy to collaborate with the CryptoLite team and contribute our ideas so they can align with the firm's broader PQC strategy.
+
+Thank you again for your guidance. We look forward to working together and ensuring our efforts align with the firm's direction.
+
+Best regards,
+
+Santosh
