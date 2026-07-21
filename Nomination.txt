@@ -28,3 +28,24 @@ Thank you again for your guidance. We look forward to working together and ensur
 Best regards,
 
 Santosh
+
+
+
+Hi Hubert,
+
+Thank you for taking the time to review our proposal and for your thoughtful feedback. We also appreciate your kind words regarding the work.
+
+We completely agree that CryptoLite is the firm's standardized and endorsed solution for PQC enablement, and we'll update our Confluence page to make that explicit so there is no ambiguity about the intent of our work.
+
+QuantumPulse was initiated over 18 months ago as an exploration of runtime PQC observability and compliance. As part of this effort, we recently integrated the latest CryptoLite 1.0.0 release into CertGuardian Neo and confirmed that it serves as the enablement layer for PQC capabilities.
+
+Our intent is not to build a parallel PQC enablement solution. Instead, we're focused on operational capabilities that complement CryptoLite, such as runtime verification of negotiated TLS parameters, connection-level context, certificate and authentication posture, enterprise-wide visibility, and compliance reporting. These are intended to build upon CryptoLite's enablement capabilities rather than replace them.
+
+We also recognize there may be areas where these capabilities could be valuable to CryptoLite itself. We'd be very happy to collaborate with your team, share our findings, and contribute any useful enhancements upstream where they make sense. As a business application team, our preference is to leverage the firm's standard solution and help strengthen it, rather than maintain overlapping functionality independently.
+
+Thank you again for reaching out and for the guidance. We appreciate the opportunity to align our work with the firm's PQC strategy and look forward to collaborating with your team.
+
+Best regards,
+
+Santosh Panigrahy
+On behalf of the QuantumPulse / CertGuardian team
